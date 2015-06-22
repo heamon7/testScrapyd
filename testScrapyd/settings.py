@@ -24,5 +24,7 @@ PASSWORD_LIST=[
     ,'h3'
     ,'h4'
 ]
+
+SCRAPYD_HOST ='localhost'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'testScrapyd (+http://www.yourdomain.com)'

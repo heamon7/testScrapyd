@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from scrapyd_api import ScrapydAPI
 from testScrapyd import settings
+import requests
+
 class ScrapyderSpider(scrapy.Spider):
     name = "scrapyder"
     allowed_domains = ["zhihu.com"]
@@ -11,17 +12,17 @@ class ScrapyderSpider(scrapy.Spider):
     def __init__(self,spider_type='Master',spider_number=0,partition=1,**kwargs):
         # self.stats = stats
         print "Initianizing ....."
-        scrapyd = ScrapydAPI('http://localhost:6800')
         self.spider_type = spider_type
         self.spider_number = spider_number
         self.partition = partition
+        spider_number = int(spider_number)
+        partition= int(partition)
         # self.spider_number = spider_number
         # self.spider_number = spider_number
         # leancloud.init(settings.APP_ID_S, master_key=settings.MASTER_KEY_S)
         # client1 = bmemcached.Client(settings.CACHE_SERVER_1,settings.CACHE_USER_1,settings.CACHE_PASSWORD_1)
         # client2 = bmemcached.Client(settings.CACHE_SERVER_2,settings.CACHE_USER_2,settings.CACHE_PASSWORD_2)
        # redis0 = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, password=settings.REDIS_USER+':'+settings.REDIS_PASSWORD,db=0)
-        dbPrime = 97
         self.email= settings.EMAIL_LIST[int(spider_number)]
         self.password=settings.PASSWORD_LIST[int(spider_number)]
         # self.questionIdList = redis0.hvals('questionIndex')
@@ -29,15 +30,18 @@ class ScrapyderSpider(scrapy.Spider):
         self.questionIdList= range(0,123)
         questionIdListLength =123
         if spider_type=='Master':
-            if int(spider_number)!=1:
+            if int(partition)!=1:
                 self.questionIdList = self.questionIdList[int(spider_number)*questionIdListLength/partition:(int(spider_number)+1)*questionIdListLength/partition]
                 for index in range(1,int(spider_number)):
-                    scrapyd.schedule('zhQuesInfo', 'quesInfoer'
-
-                                     ,spider_type='Slave'
-                                     ,spider_number=index
-                                     ,partition=partition
-                                     ,settings='JOBDIR=/tmp/scrapy/scrapyder'+str(index))
+                    payload ={
+                        'project':settings.BOT_NAME
+                        ,'spider':self.name
+                        ,'spider_type':'Slave'
+                        ,'spider_number':index
+                        ,'partition':int(partition)
+                        ,'settings':'JOBDIR=/tmp/scrapy/scrapyder'+str(index)
+                    }
+                    response = requests.post(settings.SCRAPYD_HOST+'schedule.json',data=payload)
 
         elif spider_type =='Slave':
             if int(partition)-int(spider_number)!=1:
