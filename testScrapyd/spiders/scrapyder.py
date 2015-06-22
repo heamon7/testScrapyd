@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from scrapyd_api import ScrapydAPI
-
+from testScrapyd import settings
 class ScrapyderSpider(scrapy.Spider):
     name = "scrapyder"
     allowed_domains = ["zhihu.com"]
     start_urls = (
         'http://www.zhihu.com/topic/19776749/questions',
     )
-    def __init__(self,spider_type='Master',spider_number=0,partition=1,emailList=['hea@163.com'],passwordList=['hea'],**kwargs):
+    def __init__(self,spider_type='Master',spider_number=0,partition=1,**kwargs):
         # self.stats = stats
         print "Initianizing ....."
         scrapyd = ScrapydAPI('http://localhost:6800')
@@ -22,8 +22,8 @@ class ScrapyderSpider(scrapy.Spider):
         # client2 = bmemcached.Client(settings.CACHE_SERVER_2,settings.CACHE_USER_2,settings.CACHE_PASSWORD_2)
        # redis0 = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, password=settings.REDIS_USER+':'+settings.REDIS_PASSWORD,db=0)
         dbPrime = 97
-        self.email= emailList[0]
-        self.password=passwordList[0]
+        self.email= settings.EMAIL_LIST[int(spider_number)]
+        self.password=settings.PASSWORD_LIST[int(spider_number)]
         # self.questionIdList = redis0.hvals('questionIndex')
         # questionIdListLength = len(self.questionIdList)
         self.questionIdList= range(0,123)
@@ -37,9 +37,7 @@ class ScrapyderSpider(scrapy.Spider):
                                      ,spider_type='Slave'
                                      ,spider_number=index
                                      ,partition=partition
-                                     ,emailList=[emailList[index]]
-                                     ,passwordList=[passwordList[index]]
-                                     ,settings='JOBDIR=/tmp/scrapy/zhihu/quesInfoer'+str(index))
+                                     ,settings='JOBDIR=/tmp/scrapy/scrapyder'+str(index))
 
         elif spider_type =='Slave':
             if int(partition)-int(spider_number)!=1:
